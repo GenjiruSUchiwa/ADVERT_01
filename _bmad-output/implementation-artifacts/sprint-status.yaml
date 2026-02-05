@@ -44,7 +44,7 @@ development_status:
   epic-1: in-progress
   1-1-initialize-t3-stack-project-foundation: review
   1-2-configure-database-with-multi-tenancy-schema: review
-  1-3-setup-row-level-security-rls-middleware-for-multi-tenancy: backlog
+  1-3-setup-row-level-security-rls-middleware-for-multi-tenancy: review
   1-4-configure-nextauthjs-v5-authentication-foundation: backlog
   1-5-configure-inngest-for-background-jobs: backlog
   1-6-setup-sentry-error-tracking-and-monitoring: backlog
