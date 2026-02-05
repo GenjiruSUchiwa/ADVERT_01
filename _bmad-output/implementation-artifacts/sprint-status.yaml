@@ -49,7 +49,7 @@ development_status:
   1-5-configure-inngest-for-background-jobs: review
   1-6-setup-sentry-error-tracking-and-monitoring: review
   1-7-configure-resend-email-service-and-vercel-blob-storage: review
-  1-8-initialize-shadcnui-component-library: backlog
+  1-8-initialize-shadcnui-component-library: review
   epic-1-retrospective: optional
 
   # Epic 2: User Authentication & Account Management
