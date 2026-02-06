@@ -6,9 +6,7 @@
  */
 
 export { TestEmail } from "./test";
-
-// Future template exports will be added here:
-// export { WelcomeEmail } from "./welcome";
+export { WelcomeEmail } from "./welcome";
 // export { PasswordResetEmail } from "./password-reset";
 // export { InvoiceEmail } from "./invoice";
 // export { StrategyCompleteEmail } from "./strategy-complete";
