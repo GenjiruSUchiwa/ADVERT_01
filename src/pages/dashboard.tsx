@@ -1,6 +1,4 @@
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
 import { Loader2, LogOut, User } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -14,15 +12,8 @@ import {
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      void router.push("/login");
-    }
-  }, [status, router]);
-
+  // Middleware handles redirect for unauthenticated users
   if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center">

@@ -1,12 +1,10 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
+/* eslint-disable no-undef */
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcrypt";
-import { PrismaClient, type UserRole } from "../../../generated/prisma";
+import { type UserRole } from "../../../generated/prisma";
 
-// Create a separate Prisma client for auth (without tenant RLS)
-// Auth operations need to query users across all tenants for login
-const prisma = new PrismaClient();
+// Session durations
+export const SESSION_MAX_AGE_DEFAULT = 86400; // 24 hours
+export const SESSION_MAX_AGE_REMEMBER = 30 * 86400; // 30 days
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -35,27 +33,27 @@ declare module "next-auth" {
     id?: string;
     tenantId?: string;
     role?: UserRole;
+    rememberMe?: boolean;
   }
 }
 
 /**
- * NextAuth.js v5 Configuration
+ * Edge-compatible NextAuth.js v5 Configuration
  *
- * Features:
- * - Credentials provider for email/password auth
- * - Prisma adapter for user/session storage
- * - JWT session strategy with tenant context
- * - Custom pages configuration
+ * This config is safe to import in Edge Runtime (middleware).
+ * It does NOT include providers or the Prisma adapter since those
+ * require Node.js APIs (bcrypt, PrismaClient).
+ *
+ * The full config with providers is in ./index.ts.
  *
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
-  adapter: PrismaAdapter(prisma),
-
   // Use JWT for sessions (better performance for MVP)
+  // Default maxAge is 24h; "remember me" extends to 30 days via jwt callback
   session: {
     strategy: "jwt",
-    maxAge: 86400, // 24 hours
+    maxAge: SESSION_MAX_AGE_DEFAULT,
   },
 
   // Custom pages
@@ -65,71 +63,34 @@ export const authConfig = {
     signOut: "/logout",
   },
 
-  providers: [
-    Credentials({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        const email = credentials.email as string;
-        const password = credentials.password as string;
-
-        // Find user by email
-        const user = await prisma.user.findUnique({
-          where: { email },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            passwordHash: true,
-            tenantId: true,
-            role: true,
-            image: true,
-          },
-        });
-
-        if (!user || !user.passwordHash) {
-          return null;
-        }
-
-        // Verify password
-        const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-
-        if (!isValidPassword) {
-          return null;
-        }
-
-        // Return user object (without passwordHash)
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-          tenantId: user.tenantId,
-          role: user.role,
-        };
-      },
-    }),
-  ],
+  // Providers are added in the full config (./index.ts)
+  providers: [],
 
   callbacks: {
     /**
      * JWT callback - adds user data to token
      * Called whenever a JWT is created or updated
      */
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, account }) {
       // On initial sign in, add user data to token
       if (user) {
         token.id = user.id;
         token.tenantId = user.tenantId;
         token.role = user.role;
       }
+
+      // Handle "remember me" - set extended maxAge on initial sign in
+      if (trigger === "signIn" && account) {
+        // The rememberMe flag is passed as a credential
+        // We store it on the token to adjust session maxAge
+        const rememberMe = (account as Record<string, unknown>).rememberMe;
+        if (rememberMe === "true") {
+          token.rememberMe = true;
+          // Set extended expiry: now + 30 days (in seconds)
+          token.exp = Math.floor(Date.now() / 1000) + SESSION_MAX_AGE_REMEMBER;
+        }
+      }
+
       return token;
     },
 
@@ -143,7 +104,47 @@ export const authConfig = {
         session.user.tenantId = token.tenantId as string;
         session.user.role = token.role as UserRole;
       }
+      // Extend session maxAge for "remember me" sessions
+      if (token.rememberMe) {
+        (session as unknown as Record<string, unknown>).expires = new Date(
+          Date.now() + SESSION_MAX_AGE_REMEMBER * 1000
+        ).toISOString();
+      }
       return session;
+    },
+
+    /**
+     * Authorized callback - controls route access
+     * Used by Next.js middleware for route protection
+     */
+    authorized({ auth: sessionAuth, request }) {
+      const isLoggedIn = !!sessionAuth?.user;
+      const { pathname } = request.nextUrl;
+
+      // Protected routes that require authentication
+      const protectedPaths = ["/dashboard"];
+      const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
+
+      // Auth pages that logged-in users should be redirected away from
+      const authPaths = ["/login", "/register"];
+      const isAuthPage = authPaths.some((p) => pathname.startsWith(p));
+
+      if (isProtected && !isLoggedIn) {
+        // Redirect to login with callback URL
+        const callbackUrl = encodeURIComponent(pathname);
+        return Response.redirect(
+          new URL(`/login?callbackUrl=${callbackUrl}`, request.nextUrl.origin)
+        );
+      }
+
+      if (isAuthPage && isLoggedIn) {
+        // Redirect logged-in users away from auth pages
+        return Response.redirect(
+          new URL("/dashboard", request.nextUrl.origin)
+        );
+      }
+
+      return true;
     },
   },
 } satisfies NextAuthConfig;

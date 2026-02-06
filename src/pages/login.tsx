@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -28,6 +29,7 @@ import {
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
+  rememberMe: z.boolean(),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -37,17 +39,26 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Get query params for callbackUrl and session expired message
+  const callbackUrl = (router.query.callbackUrl as string) ?? "/dashboard";
+  const sessionExpired = router.query.expired === "true";
+
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
+      rememberMe: false,
     },
   });
+
+  const rememberMe = watch("rememberMe");
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
@@ -56,6 +67,7 @@ export default function LoginPage() {
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
+        rememberMe: data.rememberMe ? "true" : "false",
         redirect: false,
       });
 
@@ -64,7 +76,7 @@ export default function LoginPage() {
         toast.error("Invalid email or password");
       } else if (result?.ok) {
         toast.success("Welcome back!");
-        void router.push("/dashboard");
+        void router.push(callbackUrl);
       }
     } catch {
       toast.error("An error occurred. Please try again.");
@@ -81,6 +93,11 @@ export default function LoginPage() {
           <CardDescription>
             Enter your credentials to access your account
           </CardDescription>
+          {sessionExpired && (
+            <p className="text-sm text-destructive">
+              Session expired. Please log in again.
+            </p>
+          )}
         </CardHeader>
 
         <form onSubmit={handleSubmit(onSubmit)}>
@@ -139,6 +156,23 @@ export default function LoginPage() {
                   {errors.password.message}
                 </p>
               )}
+            </div>
+
+            {/* Remember Me */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="rememberMe"
+                checked={rememberMe}
+                onCheckedChange={(checked) =>
+                  setValue("rememberMe", checked === true)
+                }
+              />
+              <Label
+                htmlFor="rememberMe"
+                className="text-sm font-normal text-muted-foreground cursor-pointer"
+              >
+                Remember me for 30 days
+              </Label>
             </div>
           </CardContent>
 
