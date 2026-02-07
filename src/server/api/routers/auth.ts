@@ -1,8 +1,12 @@
 import { z } from "zod";
+import crypto from "crypto";
 import bcrypt from "bcrypt";
 import { TRPCError } from "@trpc/server";
 import { PrismaClient } from "../../../../generated/prisma";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { isEmailConfigured, sendEmail } from "~/lib/email/client";
+import { PasswordResetEmail } from "~/lib/email/templates/password-reset";
+import { PasswordChangedEmail } from "~/lib/email/templates/password-changed";
 
 // Create a separate Prisma client without RLS for auth operations
 // Registration creates tenants and users before they can have a tenant context
@@ -78,6 +82,20 @@ async function generateUniqueTenantSlug(
 
   return slug;
 }
+
+/**
+ * Base URL for the application (used in email links)
+ */
+function getBaseUrl(): string {
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+}
+
+/**
+ * Token expiry duration: 1 hour
+ */
+const TOKEN_EXPIRY_MS = 60 * 60 * 1000;
 
 export const authRouter = createTRPCRouter({
   /**
@@ -173,5 +191,201 @@ export const authRouter = createTRPCRouter({
       });
 
       return { available: !existingUser };
+    }),
+
+  /**
+   * Request a password reset
+   *
+   * Generates a token, stores it hashed in VerificationToken,
+   * and sends a reset email. Always returns success to prevent
+   * email enumeration.
+   */
+  requestPasswordReset: publicProcedure
+    .input(z.object({ email: z.string().email("Invalid email address") }))
+    .mutation(async ({ input }) => {
+      const { email } = input;
+
+      // Always return the same message regardless of whether email exists
+      const successMessage =
+        "If that email exists, we've sent a password reset link.";
+
+      // Look up user
+      const user = await prismaAuth.user.findUnique({
+        where: { email },
+        select: { id: true, name: true, email: true },
+      });
+
+      if (!user) {
+        // Don't reveal that email doesn't exist
+        console.log(
+          `[AUTH] Password reset requested for non-existent email: ${email} at ${new Date().toISOString()}`
+        );
+        return { success: true, message: successMessage };
+      }
+
+      // Delete any existing tokens for this email (only latest is valid)
+      await prismaAuth.verificationToken.deleteMany({
+        where: { identifier: email },
+      });
+
+      // Generate a cryptographically random token
+      const rawToken = crypto.randomBytes(32).toString("hex");
+
+      // Hash the token before storing (so DB compromise doesn't leak tokens)
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(rawToken)
+        .digest("hex");
+
+      // Store the hashed token
+      await prismaAuth.verificationToken.create({
+        data: {
+          identifier: email,
+          token: hashedToken,
+          expires: new Date(Date.now() + TOKEN_EXPIRY_MS),
+        },
+      });
+
+      // Send the reset email with the raw (unhashed) token
+      const resetUrl = `${getBaseUrl()}/auth/reset-password?token=${rawToken}`;
+
+      try {
+        if (isEmailConfigured()) {
+          await sendEmail({
+            to: email,
+            subject: "Reset your ADVERT password",
+            react: PasswordResetEmail({
+              userName: user.name ?? "User",
+              resetUrl,
+            }),
+          });
+        }
+      } catch (error) {
+        console.error("[AUTH] Failed to send password reset email:", error);
+        // Don't throw - still return success to prevent info leakage
+      }
+
+      console.log(
+        `[AUTH] Password reset requested for user: ${user.id} at ${new Date().toISOString()}`
+      );
+
+      return { success: true, message: successMessage };
+    }),
+
+  /**
+   * Reset password using a valid token
+   *
+   * Validates the token, updates the password, deletes the token,
+   * and sends a confirmation email.
+   */
+  resetPassword: publicProcedure
+    .input(
+      z
+        .object({
+          token: z.string().min(1, "Token is required"),
+          password: passwordSchema,
+          confirmPassword: z.string(),
+        })
+        .refine((data) => data.password === data.confirmPassword, {
+          message: "Passwords do not match",
+          path: ["confirmPassword"],
+        })
+    )
+    .mutation(async ({ input }) => {
+      const { token, password } = input;
+
+      // Hash the provided token to compare with stored hash
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+
+      // Look up the token
+      const verificationToken =
+        await prismaAuth.verificationToken.findUnique({
+          where: { token: hashedToken },
+        });
+
+      if (!verificationToken) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "This reset link has already been used or is invalid.",
+        });
+      }
+
+      // Check if token is expired
+      if (verificationToken.expires < new Date()) {
+        // Delete expired token
+        await prismaAuth.verificationToken.delete({
+          where: { token: hashedToken },
+        });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message:
+            "This reset link has expired. Please request a new one.",
+        });
+      }
+
+      // Find the user by email (identifier)
+      const user = await prismaAuth.user.findUnique({
+        where: { email: verificationToken.identifier },
+        select: { id: true, name: true, email: true },
+      });
+
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found.",
+        });
+      }
+
+      // Hash new password
+      const passwordHash = await bcrypt.hash(password, 12);
+
+      // Update password and delete token in a transaction
+      await prismaAuth.$transaction(async (tx) => {
+        // Update user password
+        await tx.user.update({
+          where: { id: user.id },
+          data: { passwordHash },
+        });
+
+        // Delete the used token (single-use)
+        await tx.verificationToken.delete({
+          where: { token: hashedToken },
+        });
+
+        // Invalidate all existing sessions for this user (force re-login)
+        await tx.session.deleteMany({
+          where: { userId: user.id },
+        });
+      });
+
+      // Send confirmation email
+      try {
+        if (isEmailConfigured()) {
+          await sendEmail({
+            to: user.email,
+            subject: "Your ADVERT password has been changed",
+            react: PasswordChangedEmail({
+              userName: user.name ?? "User",
+            }),
+          });
+        }
+      } catch (error) {
+        console.error(
+          "[AUTH] Failed to send password changed email:",
+          error
+        );
+      }
+
+      console.log(
+        `[AUTH] Password reset completed for user: ${user.id} at ${new Date().toISOString()}`
+      );
+
+      return {
+        success: true,
+        message: "Password reset successful. You can now log in.",
+      };
     }),
 });

@@ -56,7 +56,7 @@ development_status:
   epic-2: in-progress
   2-1-user-registration-with-email-and-password: review
   2-2-user-login-with-credentials-and-session-management: review
-  2-3-password-reset-via-email-link: backlog
+  2-3-password-reset-via-email-link: review
   2-4-user-profile-management-and-updates: backlog
   epic-2-retrospective: optional
 

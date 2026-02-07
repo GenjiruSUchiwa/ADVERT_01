@@ -259,7 +259,7 @@ describe("User Registration", () => {
 
     it("should link to forgot password", () => {
       const pageCode = fs.readFileSync("src/pages/login.tsx", "utf-8");
-      expect(pageCode).toContain('href="/forgot-password"');
+      expect(pageCode).toContain('href="/auth/forgot-password"');
       expect(pageCode).toContain("Forgot password");
     });
   });
