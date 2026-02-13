@@ -1,0 +1,304 @@
+<task id="_bmad/bmm/tasks/write-advert-guide.xml"
+  name="Write ADVERT Method Consultant Field Guide"
+  description="Rédiger le guide consultant terrain complet de la méthode ADVERT avec tous les chapitres et annexes"
+  standalone="true">
+
+  <objective>Produire un guide praticien complet de la Méthode ADVERT en français, structuré en 10 chapitres + 7 annexes, prêt pour publication. Le guide doit être autonome (utilisable sans outil digital), fidèle à la méthodologie d'Alexandre DJENGUE, et servir de funnel naturel vers le SaaS ADVERT.</objective>
+
+  <intellectual-property critical="true">
+    La Méthode ADVERT est la propriété intellectuelle d'Alexandre DJENGUE, déployée par son agence UPgraders.
+    L'agent rédacteur agit comme ghostwriter au service de l'auteur. Le ton est celui d'Alexandre DJENGUE parlant à ses pairs consultants.
+    Tous droits réservés. Aucune attribution à des tiers pour la méthodologie elle-même.
+  </intellectual-property>
+
+  <inputs>
+    <input name="brainstorm" required="true"
+      path="{output_folder}/brainstorming/brainstorming-session-2026-02-04.md"
+      desc="Session brainstorming originale (434 lignes) — source primaire pour les variables, piliers, et vision de la méthode" />
+    <input name="research_en" required="true"
+      path="{output_folder}/planning-artifacts/research/domain-advert-method-guide-research-2026-02-08.md"
+      desc="Recherche domaine complète en anglais (749 lignes) — statistiques vérifiées, sources, frameworks, études de marché" />
+    <input name="research_fr" required="true"
+      path="{output_folder}/planning-artifacts/research/domain-advert-method-guide-research-2026-02-08-FR.md"
+      desc="Recherche domaine complète en français (652 lignes) — version française avec mêmes données vérifiées" />
+  </inputs>
+
+  <output>
+    <dir>{output_folder}/guide/</dir>
+    <file name="guide-advert-method.md" desc="Guide principal — tous les chapitres" />
+    <file name="annexes/annexe-a-variables.md" />
+    <file name="annexes/annexe-b-templates-piliers.md" />
+    <file name="annexes/annexe-c-questions-entretien.md" />
+    <file name="annexes/annexe-d-template-swot.md" />
+    <file name="annexes/annexe-e-template-strategie.md" />
+    <file name="annexes/annexe-f-checklists-reglementaires.md" />
+    <file name="annexes/annexe-g-protocole-donnees.md" />
+  </output>
+
+  <llm critical="true">
+    <i>MANDATORY: Execute ALL steps in the flow section IN EXACT ORDER</i>
+    <i>DO NOT skip steps or change the sequence</i>
+    <i>HALT immediately when halt-conditions are met</i>
+    <i>Each action xml tag within step xml tag is a REQUIRED action to complete that step</i>
+
+    <i>Tu es une ghostwriter experte en méthodologies stratégiques. Tu écris au nom d'Alexandre DJENGUE.</i>
+    <i>Le ton est : professionnel, direct, engageant, accessible aux juniors, respectueux de l'expertise des seniors.</i>
+    <i>La langue du guide est le FRANÇAIS.</i>
+    <i>JAMAIS d'invention de données — toute statistique provient des documents de recherche.</i>
+    <i>JAMAIS de jargon académique non traduit — utilise la terminologie ADVERT.</i>
+    <i>Les frameworks externes sont ABSORBÉS par ADVERT — jamais présentés comme alternatives ou égaux.</i>
+
+    <principles>
+      <i>Autonomie locale, cohérence globale : chaque chapitre se lit seul ET s'inscrit dans la cascade</i>
+      <i>Clarté prime sur exhaustivité : un concept mal expliqué est pire qu'un concept omis</i>
+      <i>Études de cas = moteur de compréhension : jamais de pilier sans marque culte réelle</i>
+      <i>Templates = outils de TRAVAIL : chaque champ a une instruction de remplissage</i>
+      <i>Douleur manuelle intentionnelle : les templates sont excellents pour 1-3 marques, douloureux à l'échelle → funnel SaaS naturel</i>
+      <i>Imprimable : les consultants africains n'ont pas toujours un internet fiable</i>
+    </principles>
+  </llm>
+
+  <guide-structure>
+
+    <part n="I" title="Les Fondations" chapters="1-2">
+
+      <chapter n="1" title="Pourquoi les Marques Échouent">
+        <purpose>Accrocher le lecteur avec la douleur qu'il ressent déjà. Poser le problème que la méthode ADVERT résout.</purpose>
+        <content>
+          <section>Le problème de la fragmentation — pourquoi 90% des stratégies de marque échouent</section>
+          <section>L'économie des superfans — les marques cultes surperforment (données chiffrées de la recherche)</section>
+          <section>L'opportunité africaine — 570M+ d'utilisateurs mobiles, 15,4% de croissance digitale, marché sous-desservi</section>
+          <section>Ce que ce guide va vous apprendre — la promesse au lecteur</section>
+        </content>
+        <data-sources>research_fr sections: Analyse de l'Industrie, Contexte du Marché Africain</data-sources>
+      </chapter>
+
+      <chapter n="2" title="La Méthode ADVERT — Vue d'Ensemble">
+        <purpose>Présenter la cascade à 7 piliers. Expliquer POURQUOI cet ordre. Montrer ce qui rend la méthode antifragile.</purpose>
+        <content>
+          <section>La cascade A→D→V→E→R→T + le pilier caché S</section>
+          <section>Pourquoi cet ordre est NON-NÉGOCIABLE — la logique séquentielle</section>
+          <section>Ce qui rend ADVERT antifragile — chaque pilier renforce les autres</section>
+          <section>La carte de positionnement concurrentiel — ADVERT vs. les 7 frameworks majeurs (tableau 10 dimensions issu de la recherche)</section>
+          <section>Comment utiliser ce guide — mode d'emploi par profil lecteur</section>
+        </content>
+        <data-sources>research_fr sections: Paysage Concurrentiel, Carte de Positionnement</data-sources>
+        <visual>Inclure le tableau comparatif 10 dimensions (recherche section Competitive Positioning Map)</visual>
+      </chapter>
+
+    </part>
+
+    <part n="II" title="Les 6 Piliers" chapters="3-8">
+      <chapter-template critical="true">
+        Chaque chapitre de pilier (3 à 8) suit OBLIGATOIREMENT cette structure en 6 parties :
+        1. CE QUE FAIT CE PILIER — Explication simple, accessible aux consultants juniors. Maximum 1 page.
+        2. LES VARIABLES — Chaque variable du pilier expliquée en langage ADVERT. Pour chaque variable : définition, pourquoi elle compte, ce qu'elle produit.
+        3. COMMENT LE REMPLIR — Questions à poser au client, données à collecter, exercices à conduire. Format actionnable.
+        4. ÉTUDE DE CAS — Une marque culte réelle illustrant ce pilier. Données vérifiées par la recherche. Montrer COMMENT la marque excelle sur ce pilier précis.
+        5. EXERCICE SIMPLE — Exercice pratique que le lecteur peut faire immédiatement sur sa propre marque ou celle d'un client.
+        6. POUR ALLER PLUS LOIN — Encadré expert référençant les frameworks absorbés. Format : « Les experts reconnaîtront [framework] dans notre approche de [variable] — ADVERT étend ceci en... »
+      </chapter-template>
+
+      <chapter n="3" title="A — Authenticité">
+        <pillar>Authenticité</pillar>
+        <variables>Identité de marque, Hero's Journey, Ikigai, Valeurs (Schwartz), Hiérarchie Communautaire, Timeline</variables>
+        <frameworks-absorbed>Schwartz Values Theory, Campbell's Hero's Journey, Ikigai, Kapferer Brand Identity Prism (facette culturelle)</frameworks-absorbed>
+        <case-study-suggestions>Apple (identité authentique depuis le garage), Patagonia (valeurs vécues), Nike (hero's journey du sportif)</case-study-suggestions>
+        <data-sources>brainstorm section Pilier A + research_fr Tier 1 &amp; 2 frameworks</data-sources>
+      </chapter>
+
+      <chapter n="4" title="D — Distinction">
+        <pillar>Distinction</pillar>
+        <variables>Personas, Paysage Concurrentiel, Promesses de Marque, Positionnement, Ton de Voix, Identité Visuelle, Assets Linguistiques</variables>
+        <frameworks-absorbed>Aaker Brand Equity Model, Keller CBBE Pyramid, Porter's Competitive Strategy, Kapferer Prism (facettes physique et personnalité)</frameworks-absorbed>
+        <case-study-suggestions>Nike (Just Do It — distinction totale), Tesla (positionnement unique), Innocent Drinks (ton de voix distinctif)</case-study-suggestions>
+        <data-sources>brainstorm section Pilier D + research_fr Tier 1 frameworks</data-sources>
+      </chapter>
+
+      <chapter n="5" title="V — Valeur">
+        <pillar>Valeur</pillar>
+        <variables>Product Ladder, Valeur pour la Marque, Valeur pour le Client, Coût pour la Marque, Coût pour le Client, Unit Economics</variables>
+        <frameworks-absorbed>Value Proposition Canvas (Osterwalder), Blue Ocean Strategy (Kim &amp; Mauborgne), Jobs To Be Done (Christensen)</frameworks-absorbed>
+        <case-study-suggestions>IKEA (value engineering), Nespresso (product ladder), Costco (unit economics)</case-study-suggestions>
+        <data-sources>brainstorm section Pilier V + research_fr Tier 4 frameworks</data-sources>
+      </chapter>
+
+      <chapter n="6" title="E — Engagement">
+        <pillar>Engagement</pillar>
+        <variables>Touchpoints (physique/digital/humain), Rituels, Principes Communautaires, Gamification, AARRR, KPIs</variables>
+        <frameworks-absorbed>Primal Branding (Hanlon — 7 éléments cultes), Growth Hacking (AARRR), Community-Led Growth, Gamification (Octalysis)</frameworks-absorbed>
+        <case-study-suggestions>Harley-Davidson (communauté culte), Starbucks (rituels), Duolingo (gamification), CrossFit (principes communautaires)</case-study-suggestions>
+        <data-sources>brainstorm section Pilier E + research_fr Tier 3 frameworks</data-sources>
+      </chapter>
+
+      <chapter n="7" title="R — Risk">
+        <pillar>Risk</pillar>
+        <variables>SWOTs individuels par variable, SWOT Global, Score de Risque, Priorités de Mitigation</variables>
+        <frameworks-absorbed>SWOT Analysis, Risk Matrix, Scenario Planning</frameworks-absorbed>
+        <case-study-suggestions>Volkswagen Dieselgate (risque éthique non détecté), Kodak (risque d'innovation ignoré), Nokia (risque de marché)</case-study-suggestions>
+        <specificity>Ce pilier est UNIQUE à ADVERT — aucun framework de branding existant ne fait de SWOT sur CHAQUE variable individuellement. C'est le moteur d'antifragilité. Insister sur cette distinction.</specificity>
+        <data-sources>brainstorm section Pilier R + research_fr Regulatory Environment</data-sources>
+      </chapter>
+
+      <chapter n="8" title="T — Track">
+        <pillar>Track</pillar>
+        <variables>Croisement de 3 Sources de Données, Validation, Rapport Réalité Marché, TAM/SAM/SOM</variables>
+        <frameworks-absorbed>Market Sizing (TAM/SAM/SOM), Data Triangulation, Evidence-Based Strategy</frameworks-absorbed>
+        <case-study-suggestions>Spotify Wrapped (data-driven engagement), Netflix (A/B testing culture), Jumia (adaptation données africaines)</case-study-suggestions>
+        <specificity>Track est le pilier de vérité — il confronte TOUS les autres piliers à la réalité du marché. Insister sur la validation croisée de 3 sources minimum.</specificity>
+        <data-sources>brainstorm section Pilier T + research_fr Technical Trends</data-sources>
+      </chapter>
+
+    </part>
+
+    <part n="III" title="Le Livrable" chapters="9">
+      <chapter n="9" title="S — Strategy : Le Document de Stratégie 360°">
+        <purpose>Montrer comment les 6 piliers convergent en UN livrable client actionnable.</purpose>
+        <content>
+          <section>Ce que le client reçoit — le document de stratégie de marque 360°</section>
+          <section>Comment assembler le livrable — de la cascade au document final</section>
+          <section>Comment le livrable alimente les agences de production, les briefs créatifs, les plans média</section>
+          <section>Planification court terme (0-6 mois), moyen terme (6-18 mois), long terme (18-36 mois)</section>
+          <section>Exemple de table des matières d'un livrable S complet</section>
+        </content>
+        <data-sources>brainstorm section Pilier S + research_fr Synthesis section</data-sources>
+      </chapter>
+    </part>
+
+    <part n="IV" title="Éthique et Pratique" chapters="10">
+      <chapter n="10" title="La Matrice de Manipulation — Framework Éthique">
+        <purpose>Établir la frontière entre persuasion et manipulation. Fournir un outil d'auto-évaluation.</purpose>
+        <content>
+          <section>Persuasion vs. Manipulation — où est la ligne</section>
+          <section>La Matrice de Manipulation — outil d'auto-évaluation éthique pour chaque variable</section>
+          <section>Conscience réglementaire — standards publicitaires en Afrique (ARPP, ASA, APCON)</section>
+          <section>Protection des données — RGPD, POPIA, NDPR et leurs implications pour les piliers E et T</section>
+          <section>Le serment du consultant ADVERT</section>
+        </content>
+        <data-sources>research_fr section Environnement Réglementaire et Normatif</data-sources>
+      </chapter>
+    </part>
+
+    <part n="V" title="La Dernière Page">
+      <content>
+        Une seule page. Sobre. Directe.
+        « Vous maîtrisez ADVERT. Pour ceux qui font ça au quotidien, découvrez l'outil qui automatise ce que vous venez d'apprendre à faire à la main. »
+        Lien vers le SaaS. Rien de plus. Pas de pitch. Pas de tableau de fonctionnalités. La douleur manuelle ressentie au fil du guide EST le pitch.
+      </content>
+    </part>
+
+  </guide-structure>
+
+  <annexes-structure>
+
+    <annexe id="A" title="Liste Complète des Variables avec Instructions de Remplissage">
+      <purpose>Référence rapide de TOUTES les variables ADVERT avec leur pilier, définition, et instruction de remplissage</purpose>
+      <format>Tableau : | Pilier | Variable | Définition | Comment la remplir | Output attendu |</format>
+      <data-sources>brainstorm (toutes les variables par pilier)</data-sources>
+    </annexe>
+
+    <annexe id="B" title="Templates par Pilier (Worksheets et Canevas)">
+      <purpose>Un worksheet actionnable par pilier que le consultant peut imprimer et remplir avec son client</purpose>
+      <format>6 templates (un par pilier A-T), chacun avec : titre, instructions, champs à remplir avec placeholders, espace de notes</format>
+      <constraint>Imprimable sur A4. Pas de dépendance digitale.</constraint>
+    </annexe>
+
+    <annexe id="C" title="Banque de Questions d'Entretien Client">
+      <purpose>Questions concrètes que le consultant pose au client à chaque pilier</purpose>
+      <format>Organisé par pilier, puis par variable. 3-5 questions par variable. Mix questions ouvertes et fermées.</format>
+    </annexe>
+
+    <annexe id="D" title="Template de Génération SWOT pour le Pilier R">
+      <purpose>Template spécifique pour générer les SWOTs individuels ET le SWOT global</purpose>
+      <format>Template SWOT vierge + instructions de remplissage + exemple rempli sur une variable fictive + template de score de risque agrégé</format>
+    </annexe>
+
+    <annexe id="E" title="Template de Document de Stratégie pour le Pilier S">
+      <purpose>Le template du livrable final que le consultant remet au client</purpose>
+      <format>Table des matières type du document 360° + template de chaque section + instructions de personnalisation par type de client (startup, PME, grande entreprise)</format>
+    </annexe>
+
+    <annexe id="F" title="Checklists Réglementaires par Marché Africain Majeur">
+      <purpose>Aide-mémoire réglementaire pour les marchés clés</purpose>
+      <format>Un checklist par pays/région : Afrique du Sud, Nigeria, Kenya, UEMOA/CEMAC, Maroc/Tunisie. Couvre : publicité, données personnelles, PI, standards sectoriels.</format>
+      <data-sources>research_fr section Environnement Réglementaire</data-sources>
+    </annexe>
+
+    <annexe id="G" title="Protocole de Gestion des Données pour le Pilier T">
+      <purpose>Guide pratique pour la collecte, le stockage et l'utilisation éthique des données marché</purpose>
+      <format>Protocole en étapes : (1) Sources de données, (2) Méthodes de collecte, (3) Validation croisée, (4) Stockage et archivage, (5) Mise à jour périodique</format>
+    </annexe>
+
+  </annexes-structure>
+
+  <flow>
+    <step n="1" title="Chargement des Sources">
+      <action>Charger brainstorm: {output_folder}/brainstorming/brainstorming-session-2026-02-04.md</action>
+      <action>Charger research_fr: {output_folder}/planning-artifacts/research/domain-advert-method-guide-research-2026-02-08-FR.md</action>
+      <action>Charger research_en: {output_folder}/planning-artifacts/research/domain-advert-method-guide-research-2026-02-08.md</action>
+      <action>Vérifier que les 3 fichiers sont chargés. HALT si un fichier manque.</action>
+      <action>Créer le répertoire de sortie {output_folder}/guide/ et {output_folder}/guide/annexes/</action>
+    </step>
+
+    <step n="2" title="Rédaction Partie I — Les Fondations">
+      <action>Rédiger Chapitre 1 : Pourquoi les Marques Échouent</action>
+      <action>Rédiger Chapitre 2 : La Méthode ADVERT — Vue d'Ensemble</action>
+      <action>Sauvegarder dans {output_folder}/guide/guide-advert-method.md</action>
+      <action>Informer l'utilisateur de la progression et demander validation avant de continuer</action>
+    </step>
+
+    <step n="3" title="Rédaction Partie II — Les 6 Piliers">
+      <action>Pour chaque pilier (A, D, V, E, R, T) :</action>
+      <action>  - Extraire les variables et données du brainstorm pour ce pilier</action>
+      <action>  - Extraire les frameworks absorbés et données de la recherche</action>
+      <action>  - Rédiger le chapitre en suivant la structure 6-parties OBLIGATOIRE</action>
+      <action>  - Vérifier que l'étude de cas utilise des données de la recherche (pas d'invention)</action>
+      <action>  - Sauvegarder dans le fichier guide après chaque chapitre</action>
+      <action>  - Informer l'utilisateur après chaque chapitre terminé</action>
+    </step>
+
+    <step n="4" title="Rédaction Parties III-V">
+      <action>Rédiger Chapitre 9 : S — Strategy</action>
+      <action>Rédiger Chapitre 10 : La Matrice de Manipulation</action>
+      <action>Rédiger la Dernière Page (funnel SaaS)</action>
+      <action>Sauvegarder dans le fichier guide</action>
+    </step>
+
+    <step n="5" title="Rédaction des Annexes">
+      <action>Produire Annexe A dans {output_folder}/guide/annexes/annexe-a-variables.md</action>
+      <action>Produire Annexe B dans {output_folder}/guide/annexes/annexe-b-templates-piliers.md</action>
+      <action>Produire Annexe C dans {output_folder}/guide/annexes/annexe-c-questions-entretien.md</action>
+      <action>Produire Annexe D dans {output_folder}/guide/annexes/annexe-d-template-swot.md</action>
+      <action>Produire Annexe E dans {output_folder}/guide/annexes/annexe-e-template-strategie.md</action>
+      <action>Produire Annexe F dans {output_folder}/guide/annexes/annexe-f-checklists-reglementaires.md</action>
+      <action>Produire Annexe G dans {output_folder}/guide/annexes/annexe-g-protocole-donnees.md</action>
+    </step>
+
+    <step n="6" title="Assemblage Final et Table des Matières">
+      <action>Générer la Table des Matières complète avec liens internes</action>
+      <action>Insérer le frontmatter (titre, auteur, date, copyright)</action>
+      <action>Vérifier la cohérence des renvois entre chapitres et annexes</action>
+      <action>Produire un résumé de livraison : nombre de chapitres, nombre de mots, annexes livrées</action>
+    </step>
+  </flow>
+
+  <halt-conditions>
+    <condition>HALT si un des 3 fichiers source n'est pas trouvé — informer l'utilisateur</condition>
+    <condition>HALT si une statistique ou donnée ne peut pas être sourcée depuis les documents de recherche — ne JAMAIS inventer</condition>
+    <condition>HALT si un chapitre pilier ne respecte pas la structure 6-parties — corriger avant de continuer</condition>
+  </halt-conditions>
+
+  <acceptance-criteria>
+    <criterion>10 chapitres rédigés en français avec contenu substantiel (pas de placeholders)</criterion>
+    <criterion>6 chapitres piliers respectent TOUS la structure 6-parties</criterion>
+    <criterion>Chaque chapitre pilier contient une étude de cas de marque culte vérifiable</criterion>
+    <criterion>7 annexes produites comme fichiers séparés avec contenu actionnable</criterion>
+    <criterion>Toutes les statistiques sont sourcées depuis les documents de recherche</criterion>
+    <criterion>Le tableau comparatif 10 dimensions est inclus au Chapitre 2</criterion>
+    <criterion>La Matrice de Manipulation est incluse au Chapitre 10</criterion>
+    <criterion>La Dernière Page contient le call-to-action SaaS sobre</criterion>
+    <criterion>Table des matières générée avec liens internes</criterion>
+    <criterion>Propriété intellectuelle d'Alexandre DJENGUE clairement établie dans le frontmatter</criterion>
+  </acceptance-criteria>
+
+</task>
